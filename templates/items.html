@@ -63,21 +63,30 @@
             margin-bottom: 12px;
         }
 
-        .claim-btn {
+        .claim-btn.disabled {
             display: inline-block;
             padding: 8px 14px;
-            background: #00c6ff;
+            background: #777;
             color: #000;
             border-radius: 8px;
-            text-decoration: none;
             font-weight: bold;
             font-size: 14px;
+            cursor: not-allowed;
+            text-decoration: none;
         }
 
         .empty-state {
             text-align: center;
             padding: 80px;
             opacity: 0.8;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin: 20px 40px;
+            color: #ffcc80;
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -87,6 +96,8 @@
 <div class="navbar">
     📦 Found Items
 </div>
+
+<a href="/dashboard" class="back-link">← Back to Dashboard</a>
 
 {% if items|length == 0 %}
     <div class="empty-state">
@@ -112,8 +123,8 @@
             <div class="location">📍 {{ item[3] }}</div>
             <div class="description">{{ item[4] }}</div>
 
-            <!-- Future claim workflow -->
-            <a href="#" class="claim-btn">Claim Item</a>
+            <!-- Claim feature intentionally disabled (future scope) -->
+            <span class="claim-btn disabled">Claim (Coming Soon)</span>
         </div>
 
     </div>

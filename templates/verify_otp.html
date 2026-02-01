@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify OTP | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="auth-bg">
+
+<div class="auth-card">
+    <h2>Verify OTP</h2>
+    <p class="subtitle">Enter the 6-digit OTP sent to your email</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert" role="alert">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" autocomplete="off">
+
+        <label for="otp" class="sr-only">OTP</label>
+        <input
+            id="otp"
+            type="text"
+            name="otp"
+            placeholder="Enter OTP"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            required
+        >
+
+        <button type="submit">Verify</button>
+    </form>
+
+    <p class="link">
+        Didn’t receive OTP? <a href="/forgot">Resend</a>
+    </p>
+</div>
+
+</body>
+</html>

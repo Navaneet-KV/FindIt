@@ -10,8 +10,8 @@
 
 <header class="dash-header">
     <div>
-        <h2>Welcome, {{ user_name }}</h2>
-        <span class="role">{{ role | upper }}</span>
+        <h2>Welcome</h2>
+        <span class="role">{{ session['user_email'] }}</span>
     </div>
 
     <a href="/logout" class="logout" aria-label="Logout">Logout</a>
@@ -35,13 +35,6 @@
             📄<br>
             <span>Requests</span>
         </a>
-
-        {% if role == "admin" %}
-        <a href="/admin" class="dash-card admin" aria-label="Admin panel">
-            🛡️<br>
-            <span>Admin Panel</span>
-        </a>
-        {% endif %}
 
     </section>
 

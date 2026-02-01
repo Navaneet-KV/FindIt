@@ -22,16 +22,18 @@
 
     <form method="post" autocomplete="on">
 
-        <label for="username" class="sr-only">Username</label>
+        <!-- EMAIL (matches backend) -->
+        <label for="email" class="sr-only">Email</label>
         <input
-            id="username"
-            type="text"
-            name="username"
-            placeholder="Username"
-            autocomplete="username"
+            id="email"
+            type="email"
+            name="email"
+            placeholder="Email address"
+            autocomplete="email"
             required
         >
 
+        <!-- PASSWORD -->
         <label for="password" class="sr-only">Password</label>
         <input
             id="password"
@@ -39,6 +41,7 @@
             name="password"
             placeholder="Password"
             autocomplete="new-password"
+            minlength="6"
             required
         >
 
