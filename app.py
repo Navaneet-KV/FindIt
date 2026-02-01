@@ -1,24 +1,27 @@
 from flask import Flask, render_template, request, redirect, session, flash
 from database import connect, init_db
-import random
-import smtplib
+from functools import wraps
+import os
 
 app = Flask(__name__)
-app.secret_key = "findit_secret"
+app.secret_key = "findit_secret_key"
 
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# Initialize DB
 init_db()
 
-# ---------------- EMAIL OTP FUNCTION ----------------
-def send_otp(email, otp):
-    sender = "YOUR_GMAIL@gmail.com"        # TODO: replace
-    password = "APP_PASSWORD"              # TODO: replace
+# ---------------- LOGIN REQUIRED ----------------
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user" not in session:
+            return redirect("/")
+        return f(*args, **kwargs)
+    return decorated
 
-    message = f"Subject: FindIt OTP\n\nYour OTP for password reset is: {otp}"
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(sender, password)
-        server.sendmail(sender, email, message)
 
 # ---------------- LOGIN ----------------
 @app.route("/", methods=["GET", "POST"])
@@ -44,7 +47,8 @@ def login():
 
     return render_template("login.html")
 
-# ---------------- REGISTER (FIXED) ----------------
+
+# ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -55,101 +59,78 @@ def register():
             conn = connect()
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO users(email, password) VALUES (?, ?)",
+                "INSERT INTO users (email, password) VALUES (?, ?)",
                 (email, password)
             )
             conn.commit()
             conn.close()
-
             flash("Registration successful. Please login.")
             return redirect("/")
-
         except:
             flash("Email already exists")
 
     return render_template("register.html")
 
+
 # ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
+@login_required
 def dashboard():
-    if "user" not in session:
-        return redirect("/")
     return render_template("dashboard.html")
 
-# ---------------- FORGOT PASSWORD ----------------
-@app.route("/forgot", methods=["GET", "POST"])
-def forgot():
+
+# ---------------- ADD ITEM ----------------
+@app.route("/add_item", methods=["GET", "POST"])
+@login_required
+def add_item():
     if request.method == "POST":
-        email = request.form["email"]
-        otp = str(random.randint(100000, 999999))
+        name = request.form["name"]
+        category = request.form["category"]
+        location = request.form["location"]
+        description = request.form["description"]
+
+        image_file = request.files.get("image")
+        image_name = None
+
+        if image_file and image_file.filename != "":
+            image_name = image_file.filename
+            image_file.save(os.path.join(app.config["UPLOAD_FOLDER"], image_name))
 
         conn = connect()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE email=?", (email,))
-        user = cur.fetchone()
-
-        if not user:
-            conn.close()
-            flash("Email not registered")
-            return redirect("/forgot")
-
-        cur.execute("UPDATE users SET otp=? WHERE email=?", (otp, email))
+        cur.execute("""
+            INSERT INTO items (name, category, location, description, image, status)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (name, category, location, description, image_name, "Available"))
         conn.commit()
         conn.close()
 
-        send_otp(email, otp)
-        session["reset_email"] = email
-        return redirect("/verify_otp")
+        return redirect("/items")
 
-    return render_template("forgot.html")
+    return render_template("add_item.html")
 
-# ---------------- VERIFY OTP ----------------
-@app.route("/verify_otp", methods=["GET", "POST"])
-def verify_otp():
-    email = session.get("reset_email")
-    if not email:
-        return redirect("/forgot")
 
-    if request.method == "POST":
-        entered_otp = request.form["otp"]
+# ---------------- VIEW ITEMS ----------------
+@app.route("/items")
+@login_required
+def items():
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM items")
+    items = cur.fetchall()
+    conn.close()
 
-        conn = connect()
-        cur = conn.cursor()
-        cur.execute("SELECT otp FROM users WHERE email=?", (email,))
-        row = cur.fetchone()
-        conn.close()
+    return render_template("items.html", items=items)
 
-        if row and entered_otp == row[0]:
-            return redirect("/reset_password")
-        else:
-            flash("Invalid OTP")
 
-    return render_template("verify_otp.html")
+# ---------------- REQUESTS (FIXED ✅) ----------------
+@app.route("/requests")
+@login_required
+def requests_page():
+    # No logic yet, just show empty page
+    data = []
+    return render_template("requests.html", data=data)
 
-# ---------------- RESET PASSWORD ----------------
-@app.route("/reset_password", methods=["GET", "POST"])
-def reset_password():
-    email = session.get("reset_email")
-    if not email:
-        return redirect("/forgot")
-
-    if request.method == "POST":
-        new_password = request.form["password"]
-
-        conn = connect()
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE users SET password=?, otp=NULL WHERE email=?",
-            (new_password, email)
-        )
-        conn.commit()
-        conn.close()
-
-        session.pop("reset_email", None)
-        flash("Password reset successful. Please login.")
-        return redirect("/")
-
-    return render_template("reset_password.html")
 
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
@@ -157,5 +138,7 @@ def logout():
     session.clear()
     return redirect("/")
 
+
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
