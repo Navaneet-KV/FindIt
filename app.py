@@ -1,29 +1,51 @@
 from flask import Flask, render_template, request, redirect, session, flash
-from database import connect, init_db
-from functools import wraps
+import sqlite3
 import os
 
 app = Flask(__name__)
-app.secret_key = "findit_secret_key"
+app.secret_key = "findit_secret"
 
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# Initialize DB
+
+# ---------- DATABASE ----------
+def connect():
+    return sqlite3.connect("findit.db")
+
+
+def init_db():
+    conn = connect()
+    cur = conn.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE,
+        password TEXT
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        category TEXT,
+        location TEXT,
+        description TEXT,
+        image TEXT,
+        status TEXT DEFAULT 'Available'
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
 init_db()
 
-# ---------------- LOGIN REQUIRED ----------------
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if "user" not in session:
-            return redirect("/")
-        return f(*args, **kwargs)
-    return decorated
-
-
-# ---------------- LOGIN ----------------
+# ---------- LOGIN ----------
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -32,10 +54,7 @@ def login():
 
         conn = connect()
         cur = conn.cursor()
-        cur.execute(
-            "SELECT * FROM users WHERE email=? AND password=?",
-            (email, password)
-        )
+        cur.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
         user = cur.fetchone()
         conn.close()
 
@@ -48,7 +67,7 @@ def login():
     return render_template("login.html")
 
 
-# ---------------- REGISTER ----------------
+# ---------- REGISTER ----------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -58,10 +77,7 @@ def register():
         try:
             conn = connect()
             cur = conn.cursor()
-            cur.execute(
-                "INSERT INTO users (email, password) VALUES (?, ?)",
-                (email, password)
-            )
+            cur.execute("INSERT INTO users(email,password) VALUES (?,?)", (email, password))
             conn.commit()
             conn.close()
             flash("Registration successful. Please login.")
@@ -72,48 +88,54 @@ def register():
     return render_template("register.html")
 
 
-# ---------------- DASHBOARD ----------------
+# ---------- DASHBOARD ----------
 @app.route("/dashboard")
-@login_required
 def dashboard():
+    if "user" not in session:
+        return redirect("/")
     return render_template("dashboard.html")
 
 
-# ---------------- ADD ITEM ----------------
+# ---------- ADD ITEM ----------
 @app.route("/add_item", methods=["GET", "POST"])
-@login_required
 def add_item():
+    if "user" not in session:
+        return redirect("/")
+
     if request.method == "POST":
-        name = request.form["name"]
-        category = request.form["category"]
-        location = request.form["location"]
-        description = request.form["description"]
+        name = request.form.get("name")
+        category = request.form.get("category")
+        location = request.form.get("location")
+        description = request.form.get("description")
 
         image_file = request.files.get("image")
         image_name = None
 
-        if image_file and image_file.filename != "":
+        if image_file and image_file.filename:
             image_name = image_file.filename
             image_file.save(os.path.join(app.config["UPLOAD_FOLDER"], image_name))
 
         conn = connect()
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO items (name, category, location, description, image, status)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (name, category, location, description, image_name, "Available"))
+            INSERT INTO items (name, category, location, description, image)
+            VALUES (?, ?, ?, ?, ?)
+        """, (name, category, location, description, image_name))
         conn.commit()
         conn.close()
 
+        flash("Item added successfully")
         return redirect("/items")
 
     return render_template("add_item.html")
 
 
-# ---------------- VIEW ITEMS ----------------
+# ---------- VIEW ITEMS ----------
 @app.route("/items")
-@login_required
 def items():
+    if "user" not in session:
+        return redirect("/")
+
     conn = connect()
     cur = conn.cursor()
     cur.execute("SELECT * FROM items")
@@ -123,22 +145,22 @@ def items():
     return render_template("items.html", items=items)
 
 
-# ---------------- REQUESTS (FIXED ✅) ----------------
+# ---------- REQUESTS (DUMMY FOR NOW) ----------
 @app.route("/requests")
-@login_required
 def requests_page():
-    # No logic yet, just show empty page
-    data = []
+    if "user" not in session:
+        return redirect("/")
+
+    data = []  # placeholder
     return render_template("requests.html", data=data)
 
 
-# ---------------- LOGOUT ----------------
+# ---------- LOGOUT ----------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
 
-# ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    app.run(debug=True)

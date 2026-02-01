@@ -1,63 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Add Found Item | FindIt</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>Add Item | FindIt</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
 
-<div class="navbar">
-    🔎 FindIt — Lost & Found Portal
-</div>
-
 <div class="card">
-    <h1>📦 Add Found Item</h1>
+<h2>Add Found Item</h2>
 
-    <form method="POST" enctype="multipart/form-data">
+<form method="POST" enctype="multipart/form-data">
+    <input type="text" name="name" placeholder="Item Name" required>
+    <input type="text" name="category" placeholder="Category" required>
+    <input type="text" name="location" placeholder="Location" required>
+    <textarea name="description" placeholder="Description"></textarea>
+    <input type="file" name="image">
+    <button type="submit">Add Item</button>
+</form>
 
-        <!-- MUST MATCH request.form["item_name"] -->
-        <input
-            type="text"
-            name="item_name"
-            placeholder="Item Name"
-            required
-        >
-
-        <input
-            type="text"
-            name="category"
-            placeholder="Category (Phone, Wallet, ID…)"
-            required
-        >
-
-        <input
-            type="text"
-            name="location"
-            placeholder="Found Location"
-            required
-        >
-
-        <textarea
-            name="description"
-            rows="4"
-            placeholder="Describe the item"
-        ></textarea>
-
-        <input
-            type="file"
-            name="image"
-            accept="image/*"
-        >
-
-        <button type="submit">➕ Add Item</button>
-    </form>
 </div>
-
-<div class="footer">
-    © 2026 FindIt | College Project
-</div>
-
 </body>
 </html>
