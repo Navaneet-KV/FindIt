@@ -14,34 +14,23 @@
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div class="alert" role="alert">
-          {{ messages[0] }}
-        </div>
+        <div class="alert">{{ messages[0] }}</div>
       {% endif %}
     {% endwith %}
 
-    <form method="post" autocomplete="on">
+    <form method="post">
 
-        <!-- EMAIL (matches backend) -->
-        <label for="email" class="sr-only">Email</label>
         <input
-            id="email"
             type="email"
             name="email"
             placeholder="Email address"
-            autocomplete="email"
             required
         >
 
-        <!-- PASSWORD -->
-        <label for="password" class="sr-only">Password</label>
         <input
-            id="password"
             type="password"
             name="password"
             placeholder="Password"
-            autocomplete="new-password"
-            minlength="6"
             required
         >
 
