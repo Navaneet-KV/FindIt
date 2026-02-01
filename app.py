@@ -1,13 +1,17 @@
 from flask import Flask, render_template, request, redirect, session, flash
-from werkzeug.security import generate_password_hash, check_password_hash
 from database import connect, init_db
+from models import LostItem
 from functools import wraps
+import os
 import random
 import smtplib
-import os
 
 app = Flask(__name__)
-app.secret_key = "findit_super_secret_key"
+app.secret_key = "findit_secret"
+
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 init_db()
 
@@ -15,24 +19,22 @@ init_db()
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if "user_email" not in session:
+        if "user" not in session:
             return redirect("/")
         return f(*args, **kwargs)
     return decorated
 
-
-# ---------------- SEND OTP EMAIL ----------------
+# ---------------- EMAIL OTP ----------------
 def send_otp(email, otp):
-    sender = "YOUR_GMAIL@gmail.com"
-    password = "APP_PASSWORD"   # Gmail App Password
+    sender = "YOUR_GMAIL@gmail.com"        # CHANGE
+    password = "APP_PASSWORD"              # CHANGE
 
-    message = f"Subject: FindIt OTP\n\nYour OTP is: {otp}"
+    msg = f"Subject: FindIt OTP\n\nYour OTP is: {otp}"
 
     with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.starttls()
         server.login(sender, password)
-        server.sendmail(sender, email, message)
-
+        server.sendmail(sender, email, msg)
 
 # ---------------- LOGIN ----------------
 @app.route("/", methods=["GET", "POST"])
@@ -43,19 +45,16 @@ def login():
 
         conn = connect()
         cur = conn.cursor()
-        cur.execute("SELECT id, password FROM users WHERE email=?", (email,))
+        cur.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
         user = cur.fetchone()
         conn.close()
 
-        if user and check_password_hash(user[1], password):
-            session["user_email"] = email
-            session["user_id"] = user[0]
+        if user:
+            session["user"] = email
             return redirect("/dashboard")
-        else:
-            flash("Invalid email or password")
+        flash("Invalid email or password")
 
     return render_template("login.html")
-
 
 # ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
@@ -64,25 +63,18 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
 
-        hashed_password = generate_password_hash(password)
-
         try:
             conn = connect()
             cur = conn.cursor()
-            cur.execute(
-                "INSERT INTO users (email, password) VALUES (?, ?)",
-                (email, hashed_password)
-            )
+            cur.execute("INSERT INTO users(email,password) VALUES (?,?)", (email, password))
             conn.commit()
             conn.close()
-
-            flash("Registration successful. Please login.")
+            flash("Registration successful")
             return redirect("/")
         except:
             flash("Email already exists")
 
     return render_template("register.html")
-
 
 # ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
@@ -90,13 +82,67 @@ def register():
 def dashboard():
     return render_template("dashboard.html")
 
+# ---------------- ADD ITEM ----------------
+@app.route("/add_item", methods=["GET", "POST"])
+@login_required
+def add_item():
+    if request.method == "POST":
+        image = request.files["image"]
+        filename = image.filename
+        image.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-# ---------------- LOGOUT ----------------
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
+        item = LostItem(
+            request.form["name"],
+            request.form["category"],
+            request.form["location"],
+            request.form["description"],
+            filename,
+            session["user"]
+        )
 
+        conn = connect()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO items(name, category, location, description, image, status, holder_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            item.name, item.category, item.location,
+            item.description, item.image, item.status, item.holder_id
+        ))
+        conn.commit()
+        conn.close()
+
+        return redirect("/items")
+
+    return render_template("add_item.html")
+
+# ---------------- VIEW ITEMS ----------------
+@app.route("/items")
+@login_required
+def items():
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM items")
+    items = cur.fetchall()
+    conn.close()
+
+    return render_template("items.html", items=items)
+
+# ---------------- REQUESTS ----------------
+@app.route("/requests")
+@login_required
+def requests_page():
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT requests.id, items.name, requests.status
+        FROM requests
+        JOIN items ON items.id = requests.item_id
+    """)
+    data = cur.fetchall()
+    conn.close()
+
+    return render_template("requests.html", data=data)
 
 # ---------------- FORGOT PASSWORD ----------------
 @app.route("/forgot", methods=["GET", "POST"])
@@ -107,12 +153,10 @@ def forgot():
 
         conn = connect()
         cur = conn.cursor()
-        cur.execute("SELECT id FROM users WHERE email=?", (email,))
-        user = cur.fetchone()
-
-        if not user:
-            conn.close()
+        cur.execute("SELECT * FROM users WHERE email=?", (email,))
+        if not cur.fetchone():
             flash("Email not registered")
+            conn.close()
             return redirect("/forgot")
 
         cur.execute("UPDATE users SET otp=? WHERE email=?", (otp, email))
@@ -125,7 +169,6 @@ def forgot():
 
     return render_template("forgot.html")
 
-
 # ---------------- VERIFY OTP ----------------
 @app.route("/verify_otp", methods=["GET", "POST"])
 def verify_otp():
@@ -134,21 +177,19 @@ def verify_otp():
         return redirect("/forgot")
 
     if request.method == "POST":
-        entered_otp = request.form["otp"]
+        entered = request.form["otp"]
 
         conn = connect()
         cur = conn.cursor()
         cur.execute("SELECT otp FROM users WHERE email=?", (email,))
-        row = cur.fetchone()
+        real = cur.fetchone()[0]
         conn.close()
 
-        if row and entered_otp == row[0]:
+        if entered == real:
             return redirect("/reset_password")
-        else:
-            flash("Invalid OTP")
+        flash("Invalid OTP")
 
     return render_template("verify_otp.html")
-
 
 # ---------------- RESET PASSWORD ----------------
 @app.route("/reset_password", methods=["GET", "POST"])
@@ -158,24 +199,25 @@ def reset_password():
         return redirect("/forgot")
 
     if request.method == "POST":
-        new_password = request.form["password"]
-        hashed_password = generate_password_hash(new_password)
+        password = request.form["password"]
 
         conn = connect()
         cur = conn.cursor()
-        cur.execute(
-            "UPDATE users SET password=?, otp=NULL WHERE email=?",
-            (hashed_password, email)
-        )
+        cur.execute("UPDATE users SET password=?, otp=NULL WHERE email=?", (password, email))
         conn.commit()
         conn.close()
 
         session.pop("reset_email", None)
-        flash("Password reset successful. Please login.")
+        flash("Password reset successful")
         return redirect("/")
 
     return render_template("reset_password.html")
 
+# ---------------- LOGOUT ----------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
