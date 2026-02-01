@@ -1,7 +1,53 @@
-<h2>FindIt - Lost & Found</h2>
-<form method="post">
-<input name="username" placeholder="Username">
-<input type="password" name="password" placeholder="Password">
-<button>Login</button>
-<a href="/register">Register</a>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="auth-bg">
+
+<div class="auth-card">
+    <h2>FindIt</h2>
+    <p class="subtitle">College Lost & Found System</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert" role="alert">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" autocomplete="on">
+        <label for="username" class="sr-only">Username</label>
+        <input
+            id="username"
+            type="text"
+            name="username"
+            placeholder="Username"
+            autocomplete="username"
+            required
+        >
+
+        <label for="password" class="sr-only">Password</label>
+        <input
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+        >
+
+        <button type="submit">Login</button>
+    </form>
+
+    <p class="link">
+        New user? <a href="/register">Register</a>
+    </p>
+</div>
+
+</body>
+</html>

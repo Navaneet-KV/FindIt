@@ -1,16 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FindIt - Dashboard</title>
+    <meta charset="UTF-8">
+    <title>Dashboard | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h2>Welcome to FindIt</h2>
 
-    <ul>
-        <li><a href="/add_item">Add Found Item</a></li>
-        <li><a href="/items">View All Items</a></li>
-        <li><a href="/requests">View Requests</a></li>
-        <li><a href="/">Logout</a></li>
-    </ul>
+<body class="dash-bg">
+
+<header class="dash-header">
+    <div>
+        <h2>Welcome, {{ user_name }}</h2>
+        <span class="role">{{ role | upper }}</span>
+    </div>
+
+    <a href="/logout" class="logout" aria-label="Logout">Logout</a>
+</header>
+
+<main class="dash-container">
+
+    <section class="dash-grid">
+
+        <a href="/add_item" class="dash-card" aria-label="Add found item">
+            ➕<br>
+            <span>Add Found Item</span>
+        </a>
+
+        <a href="/items" class="dash-card" aria-label="View found items">
+            📦<br>
+            <span>View Items</span>
+        </a>
+
+        <a href="/requests" class="dash-card" aria-label="View requests">
+            📄<br>
+            <span>Requests</span>
+        </a>
+
+        {% if role == "admin" %}
+        <a href="/admin" class="dash-card admin" aria-label="Admin panel">
+            🛡️<br>
+            <span>Admin Panel</span>
+        </a>
+        {% endif %}
+
+    </section>
+
+</main>
+
+<footer class="footer">
+    © 2026 FindIt | College Lost & Found System
+</footer>
+
 </body>
 </html>

@@ -5,5 +5,5 @@ class LostItem:
         self.location = location
         self.description = description
         self.image = image
-        self.status = "Available"
+        self.status = "found"      # consistent with database
         self.holder_id = holder_id

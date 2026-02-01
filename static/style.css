@@ -27,7 +27,7 @@ body {
     letter-spacing: 1px;
 }
 
-/* ===== CARD ===== */
+/* ===== CARD (FORMS & CONTENT) ===== */
 .card {
     max-width: 500px;
     margin: 60px auto;
@@ -38,13 +38,12 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.4);
 }
 
-/* ===== HEADINGS ===== */
 .card h1 {
     text-align: center;
     margin-bottom: 25px;
 }
 
-/* ===== FORM ===== */
+/* ===== FORMS ===== */
 input, textarea, select {
     width: 100%;
     padding: 12px;
@@ -59,12 +58,11 @@ textarea {
     resize: none;
 }
 
-/* ===== FILE INPUT ===== */
 input[type="file"] {
     background: #fff;
 }
 
-/* ===== BUTTON ===== */
+/* ===== BUTTONS ===== */
 button {
     width: 100%;
     padding: 14px;
@@ -88,4 +86,128 @@ button:hover {
     padding: 15px;
     opacity: 0.8;
     font-size: 14px;
+}
+
+/* ===== AUTH (LOGIN / REGISTER) ===== */
+body.auth-bg {
+    background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    padding: 30px;
+    width: 320px;
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    text-align: center;
+    color: white;
+}
+
+.auth-card h2 {
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-bottom: 20px;
+}
+
+.auth-card input {
+    padding: 10px;
+    margin: 8px 0;
+}
+
+.auth-card button {
+    background: #00c6ff;
+    margin-top: 12px;
+}
+
+.auth-card button:hover {
+    background: #009ad6;
+}
+
+.alert {
+    background: rgba(255,0,0,0.25);
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.link {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+/* ===== DASHBOARD ===== */
+.dash-bg {
+    background: linear-gradient(135deg, #141e30, #243b55);
+    min-height: 100vh;
+}
+
+.dash-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 40px;
+}
+
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.role {
+    background: rgba(255,255,255,0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.logout {
+    color: #ff7675;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.dash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.dash-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    transition: transform 0.3s, background 0.3s;
+}
+
+.dash-card:hover {
+    transform: translateY(-8px);
+    background: rgba(255,255,255,0.25);
+}
+
+.dash-card.admin {
+    background: rgba(255,0,0,0.25);
+}
+
+/* ===== UTILITIES ===== */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
 }

@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Found Items | FindIt</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
     <style>
         .items-grid {
             display: grid;
@@ -35,7 +37,7 @@
         }
 
         .item-content h3 {
-            margin: 0 0 8px;
+            margin: 6px 0;
         }
 
         .badge {
@@ -58,25 +60,50 @@
         .description {
             font-size: 14px;
             opacity: 0.85;
+            margin-bottom: 12px;
+        }
+
+        .claim-btn {
+            display: inline-block;
+            padding: 8px 14px;
+            background: #00c6ff;
+            color: #000;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px;
+            opacity: 0.8;
         }
     </style>
 </head>
+
 <body>
 
 <div class="navbar">
     📦 Found Items
 </div>
 
+{% if items|length == 0 %}
+    <div class="empty-state">
+        <h2>No items reported yet</h2>
+        <p>Be the first to add a found item.</p>
+    </div>
+{% else %}
+
 <div class="items-grid">
 
     {% for item in items %}
-
     <div class="item-card">
 
         {% if item[5] %}
-            <img src="{{ url_for('static', filename='uploads/' ~ item[5]) }}">
+            <img src="{{ url_for('static', filename='uploads/' ~ item[5]) }}" alt="Item image">
         {% else %}
-            <img src="https://via.placeholder.com/400x200?text=No+Image">
+            <img src="https://via.placeholder.com/400x200?text=No+Image" alt="No image">
         {% endif %}
 
         <div class="item-content">
@@ -84,16 +111,20 @@
             <h3>{{ item[1] }}</h3>
             <div class="location">📍 {{ item[3] }}</div>
             <div class="description">{{ item[4] }}</div>
+
+            <!-- Future claim workflow -->
+            <a href="#" class="claim-btn">Claim Item</a>
         </div>
 
     </div>
-
     {% endfor %}
 
 </div>
+{% endif %}
 
 <div class="footer">
     © 2026 FindIt | Lost & Found System
 </div>
 
 </body>
+</html>

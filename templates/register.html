@@ -1,18 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FindIt - Register</title>
+    <meta charset="UTF-8">
+    <title>Register | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h2>FindIt - User Registration</h2>
 
-    <form method="post">
-        <input name="username" placeholder="Username" required><br><br>
-        <input type="password" name="password" placeholder="Password" required><br><br>
+<body class="auth-bg">
+
+<div class="auth-card">
+    <h2>FindIt</h2>
+    <p class="subtitle">Create a new account</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert" role="alert">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" autocomplete="on">
+
+        <label for="username" class="sr-only">Username</label>
+        <input
+            id="username"
+            type="text"
+            name="username"
+            placeholder="Username"
+            autocomplete="username"
+            required
+        >
+
+        <label for="password" class="sr-only">Password</label>
+        <input
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Password"
+            autocomplete="new-password"
+            required
+        >
+
         <button type="submit">Register</button>
     </form>
 
-    <br>
-    <a href="/">Already have an account? Login</a>
+    <p class="link">
+        Already have an account? <a href="/">Login</a>
+    </p>
+</div>
+
 </body>
 </html>

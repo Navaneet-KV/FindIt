@@ -1,26 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FindIt - Item Requests</title>
+    <meta charset="UTF-8">
+    <title>Item Requests | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h2>Item Requests</h2>
 
-    {% if data %}
-        {% for r in data %}
-            <div style="border:1px solid black; padding:10px; margin:10px;">
-                <p><b>Item:</b> {{ r[1] }}</p>
-                <p><b>Status:</b> {{ r[2] }}</p>
-                {% if r[2] == "Pending" %}
-                    <a href="/approve/{{ r[0] }}">Approve</a>
-                {% endif %}
+<body class="dash-bg">
+
+<header class="dash-header">
+    <h2>Item Requests</h2>
+    <a href="/dashboard" class="logout">Back</a>
+</header>
+
+<main class="dash-container">
+
+    {% if data and data|length > 0 %}
+
+        <div class="items-grid">
+
+            {% for r in data %}
+            <div class="item-card">
+
+                <div class="item-content">
+                    <h3>{{ r[1] }}</h3>
+
+                    <p class="description">
+                        <b>Status:</b>
+                        <span class="badge">{{ r[2] }}</span>
+                    </p>
+
+                    {% if r[2] == "Pending" %}
+                        <a href="/approve/{{ r[0] }}" class="claim-btn">
+                            Approve Request
+                        </a>
+                    {% endif %}
+                </div>
+
             </div>
-        {% endfor %}
+            {% endfor %}
+
+        </div>
+
     {% else %}
-        <p>No requests available</p>
+
+        <div class="empty-state">
+            <h3>No requests available</h3>
+            <p>When students request items, they will appear here.</p>
+        </div>
+
     {% endif %}
 
-    <br>
-    <a href="/dashboard">Back to Dashboard</a>
+</main>
+
+<footer class="footer">
+    © 2026 FindIt | College Lost & Found System
+</footer>
+
 </body>
 </html>

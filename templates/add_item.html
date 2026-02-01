@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Add Found Item | FindIt</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -14,7 +15,9 @@
     <h1>📦 Add Found Item</h1>
 
     <form method="POST" enctype="multipart/form-data">
-        <input type="text" name="item_name" placeholder="Item Name" required>
+
+        <!-- MUST MATCH request.form["name"] -->
+        <input type="text" name="name" placeholder="Item Name" required>
 
         <input type="text" name="category" placeholder="Category (Phone, Wallet, ID…)" required>
 
@@ -22,7 +25,7 @@
 
         <textarea name="description" rows="4" placeholder="Describe the item"></textarea>
 
-        <input type="file" name="image">
+        <input type="file" name="image" accept="image/*">
 
         <button type="submit">➕ Add Item</button>
     </form>
