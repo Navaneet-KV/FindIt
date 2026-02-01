@@ -8,7 +8,6 @@ import os
 app = Flask(__name__)
 app.secret_key = "findit_super_secret_key"
 
-# Upload configuration
 UPLOAD_FOLDER = "static/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -20,7 +19,6 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "user_id" not in session:
-            flash("Please login first")
             return redirect("/")
         return f(*args, **kwargs)
     return decorated
@@ -35,11 +33,13 @@ def login():
 
         conn = connect()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE username=?", (username,))
+        cur.execute(
+            "SELECT id, username, password, role FROM users WHERE username=?",
+            (username,)
+        )
         user = cur.fetchone()
         conn.close()
 
-        # user[2] = hashed password
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
             session["role"] = user[3]
@@ -73,7 +73,6 @@ def register():
             return redirect("/register")
 
         conn.close()
-        flash("Registration successful. Please login.")
         return redirect("/")
 
     return render_template("register.html", title="FindIt")
@@ -104,7 +103,6 @@ def dashboard():
 @login_required
 def logout():
     session.clear()
-    flash("Logged out successfully")
     return redirect("/")
 
 
@@ -113,17 +111,16 @@ def logout():
 @login_required
 def add_item():
     if request.method == "POST":
-        image_file = request.files["image"]
-        image_name = image_file.filename
+        image_file = request.files.get("image")
+        image_name = ""
 
-        if image_name:
+        if image_file and image_file.filename != "":
+            image_name = image_file.filename
             image_path = os.path.join(app.config["UPLOAD_FOLDER"], image_name)
             image_file.save(image_path)
-        else:
-            image_name = None
 
         item = LostItem(
-            request.form["name"],
+            request.form["item_name"],
             request.form["category"],
             request.form["location"],
             request.form["description"],
@@ -148,7 +145,6 @@ def add_item():
         conn.commit()
         conn.close()
 
-        flash("Item added successfully")
         return redirect("/items")
 
     return render_template("add_item.html", title="FindIt")
@@ -167,6 +163,32 @@ def items():
     return render_template("items.html", items=items, title="FindIt")
 
 
+# ---------------- VIEW REQUESTS ----------------
+@app.route("/requests")
+@login_required
+def view_requests():
+    conn = connect()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            requests.id,
+            items.name,
+            requests.status
+        FROM requests
+        JOIN items ON requests.item_id = items.id
+    """)
+
+    data = cur.fetchall()
+    conn.close()
+
+    return render_template("requests.html", data=data)
+
+
 # ---------------- RUN APP ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=True
+    )
