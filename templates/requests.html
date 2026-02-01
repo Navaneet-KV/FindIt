@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FindIt - Item Requests</title>
+</head>
+<body>
+    <h2>Item Requests</h2>
+
+    {% if data %}
+        {% for r in data %}
+            <div style="border:1px solid black; padding:10px; margin:10px;">
+                <p><b>Item:</b> {{ r[1] }}</p>
+                <p><b>Status:</b> {{ r[2] }}</p>
+                {% if r[2] == "Pending" %}
+                    <a href="/approve/{{ r[0] }}">Approve</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No requests available</p>
+    {% endif %}
+
+    <br>
+    <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>

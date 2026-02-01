@@ -1,0 +1,10 @@
+<h2>Available Items</h2>
+
+{% for item in items %}
+<div style="border:1px solid black; padding:10px; margin:10px;">
+    <b>{{ item[1] }}</b><br>
+    {{ item[2] }} | {{ item[3] }}<br>
+    {{ item[4] }}<br>
+    <img src="{{ url_for('static', filename='uploads/' + item[5]) }}" width="150">
+</div>
+{% endfor %}
