@@ -14,17 +14,15 @@
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div class="alert" role="alert">
+        <div class="alert">
           {{ messages[0] }}
         </div>
       {% endif %}
     {% endwith %}
 
-    <form method="post" autocomplete="on">
+    <form method="post">
 
-        <label for="email" class="sr-only">Email</label>
         <input
-            id="email"
             type="email"
             name="email"
             placeholder="Email address"
@@ -32,9 +30,7 @@
             required
         >
 
-        <label for="password" class="sr-only">Password</label>
         <input
-            id="password"
             type="password"
             name="password"
             placeholder="Password"
@@ -44,10 +40,6 @@
 
         <button type="submit">Login</button>
     </form>
-
-    <p class="link">
-        <a href="/forgot">Forgot password? (Get OTP)</a>
-    </p>
 
     <p class="link">
         New user? <a href="/register">Register</a>
