@@ -1,23 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Add Item | FindIt</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Add Found Item | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<div class="card">
-<h2>Add Found Item</h2>
-
-<form method="POST" enctype="multipart/form-data">
-    <input type="text" name="name" placeholder="Item Name" required>
-    <input type="text" name="category" placeholder="Category" required>
-    <input type="text" name="location" placeholder="Location" required>
-    <textarea name="description" placeholder="Description"></textarea>
-    <input type="file" name="image">
-    <button type="submit">Add Item</button>
-</form>
-
+<div class="navbar">
+    🔎 FindIt — Lost & Found Portal
 </div>
+
+<div class="card">
+    <h1>📦 Add Found Item</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <input
+            type="tel"
+            name="mobile"
+            placeholder="Your Mobile Number"
+            required
+        >
+
+        <input
+            type="text"
+            name="name"
+            placeholder="Item Name"
+            required
+        >
+
+        <input
+            type="text"
+            name="category"
+            placeholder="Category (Phone, Wallet, ID…)"
+            required
+        >
+
+        <input
+            type="text"
+            name="location"
+            placeholder="Found Location"
+            required
+        >
+
+        <textarea
+            name="description"
+            rows="4"
+            placeholder="Describe the item (color, brand, marks, etc.)"
+        ></textarea>
+
+        <input
+            type="file"
+            name="image"
+            accept="image/*"
+        >
+
+        <button type="submit">➕ Add Item</button>
+    </form>
+</div>
+
+<div class="footer">
+    © 2026 FindIt | College Lost & Found System
+</div>
+
 </body>
 </html>

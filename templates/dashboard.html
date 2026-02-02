@@ -1,4 +1,51 @@
-<a href="/add_item">Add Found Item</a>
-<a href="/items">View Items</a>
-<a href="/requests">Requests</a>
-<a href="/logout">Logout</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dash-bg">
+
+<div class="dash-container">
+
+    <div class="dash-header">
+        <div>
+            <h2>Welcome</h2>
+            <span class="role">{{ session['user'] }}</span>
+        </div>
+
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+
+    <div class="dash-grid">
+
+        <a href="/add_item" class="dash-card">
+            ➕<br>
+            <span>Add Found Item</span>
+        </a>
+
+        <a href="/items" class="dash-card">
+            📦<br>
+            <span>View Items</span>
+        </a>
+
+        <a href="/requests" class="dash-card">
+            📄<br>
+            <span>Requests</span>
+        </a>
+
+        {% if role == "admin" %}
+        <a href="/requests" class="dash-card admin">
+            🛡️<br>
+            <span>Admin Panel</span>
+        </a>
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

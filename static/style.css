@@ -1,12 +1,18 @@
-/* ===== GLOBAL ===== */
+/* ================= GLOBAL ================= */
 * {
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-body {
+html, body {
     margin: 0;
-    min-height: 100vh;
+    min-height: 100%;
+    color: #fff;
+}
+
+/* ================= DEFAULT PAGES ================= */
+/* Items, Add Item, Requests (non-auth, non-dashboard) */
+body {
     background: linear-gradient(
         rgba(0, 0, 0, 0.6),
         rgba(0, 0, 0, 0.6)
@@ -15,10 +21,9 @@ body {
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
-    color: #fff;
 }
 
-/* ===== NAVBAR ===== */
+/* ================= NAVBAR ================= */
 .navbar {
     padding: 18px 40px;
     font-size: 22px;
@@ -27,7 +32,7 @@ body {
     letter-spacing: 1px;
 }
 
-/* ===== CARD (FORMS & CONTENT) ===== */
+/* ================= CARD ================= */
 .card {
     max-width: 500px;
     margin: 60px auto;
@@ -38,12 +43,13 @@ body {
     box-shadow: 0 20px 50px rgba(0,0,0,0.4);
 }
 
-.card h1 {
+.card h1,
+.card h2 {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
-/* ===== FORMS ===== */
+/* ================= FORMS ================= */
 input, textarea, select {
     width: 100%;
     padding: 12px;
@@ -62,7 +68,7 @@ input[type="file"] {
     background: #fff;
 }
 
-/* ===== BUTTONS ===== */
+/* ================= BUTTONS ================= */
 button {
     width: 100%;
     padding: 14px;
@@ -80,7 +86,7 @@ button:hover {
     background: #ffc107;
 }
 
-/* ===== FOOTER ===== */
+/* ================= FOOTER ================= */
 .footer {
     text-align: center;
     padding: 15px;
@@ -88,7 +94,9 @@ button:hover {
     font-size: 14px;
 }
 
-/* ===== AUTH (LOGIN / REGISTER) ===== */
+/* ================================================= */
+/* ================= AUTH PAGES ==================== */
+/* ================================================= */
 body.auth-bg {
     background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
     height: 100vh;
@@ -105,11 +113,6 @@ body.auth-bg {
     border-radius: 14px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.4);
     text-align: center;
-    color: white;
-}
-
-.auth-card h2 {
-    margin-bottom: 5px;
 }
 
 .subtitle {
@@ -118,14 +121,8 @@ body.auth-bg {
     margin-bottom: 20px;
 }
 
-.auth-card input {
-    padding: 10px;
-    margin: 8px 0;
-}
-
 .auth-card button {
     background: #00c6ff;
-    margin-top: 12px;
 }
 
 .auth-card button:hover {
@@ -144,14 +141,23 @@ body.auth-bg {
     font-size: 14px;
 }
 
-/* ===== DASHBOARD ===== */
-.dash-bg {
-    background: linear-gradient(135deg, #141e30, #243b55);
+/* ================================================= */
+/* ================= DASHBOARD ===================== */
+/* ================================================= */
+body.dash-bg {
+    background: linear-gradient(
+        rgba(0,0,0,0.75),
+        rgba(0,0,0,0.75)
+    ),
+    url("https://images.unsplash.com/photo-1519681393784-d120267933ba");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     min-height: 100vh;
 }
 
 .dash-container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: auto;
     padding: 40px;
 }
@@ -178,8 +184,8 @@ body.auth-bg {
 
 .dash-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
 }
 
 .dash-card {
@@ -199,11 +205,7 @@ body.auth-bg {
     background: rgba(255,255,255,0.25);
 }
 
-.dash-card.admin {
-    background: rgba(255,0,0,0.25);
-}
-
-/* ===== UTILITIES ===== */
+/* ================= UTIL ================= */
 .sr-only {
     position: absolute;
     width: 1px;

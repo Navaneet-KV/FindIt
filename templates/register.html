@@ -1,27 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Register | FindIt</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Register | FindIt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body class="auth-bg">
 
 <div class="auth-card">
-<h2>Create Account</h2>
+    <h2>FindIt</h2>
+    <p class="subtitle">Create a new account</p>
 
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<div class="alert">{{ messages[0] }}</div>
-{% endif %}
-{% endwith %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert">
+            {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
 
-<form method="post">
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <button type="submit">Register</button>
-</form>
+    <form method="post">
+        <input
+            type="email"
+            name="email"
+            placeholder="Email address"
+            required
+            autocomplete="email"
+        >
 
-<p class="link"><a href="/">Back to Login</a></p>
+        <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+            autocomplete="new-password"
+        >
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p class="link">
+        Already have an account? <a href="/">Login</a>
+    </p>
 </div>
 
 </body>

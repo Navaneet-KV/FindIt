@@ -4,57 +4,103 @@
     <meta charset="UTF-8">
     <title>Item Requests | FindIt</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+
+        .item-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            padding: 20px;
+        }
+
+        .approve-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: #4caf50;
+            color: #000;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .Pending { background: #ffc107; color: #000; }
+        .Approved { background: #4caf50; color: #000; }
+        .Rejected { background: #f44336; color: #fff; }
+    </style>
 </head>
 
 <body class="dash-bg">
 
-<header class="dash-header">
-    <h2>Item Requests</h2>
-    <a href="/dashboard" class="logout">Back</a>
-</header>
+<div class="dash-container">
 
-<main class="dash-container">
+    <div class="dash-header">
+        <h2>📄 Item Requests</h2>
+        <a href="/dashboard" class="logout">Back</a>
+    </div>
 
     {% if data and data|length > 0 %}
 
-        <div class="items-grid">
+    <div class="items-grid">
 
-            {% for r in data %}
-            <div class="item-card">
+        {% for r in data %}
+        <div class="item-card">
 
-                <div class="item-content">
-                    <h3>{{ r[1] }}</h3>
+            <h3>{{ r[1] }}</h3>
 
-                    <p class="description">
-                        <b>Status:</b>
-                        <span class="badge">{{ r[2] }}</span>
-                    </p>
+            <p>
+                <b>Requested by:</b> {{ r[2] }}
+            </p>
 
-                    <!-- Approval workflow can be added later -->
-                    <p class="description">
-                        Request recorded in system.
-                    </p>
-                </div>
+            <p>
+                <b>Status:</b>
+                <span class="status-badge {{ r[3] }}">
+                    {{ r[3] }}
+                </span>
+            </p>
 
-            </div>
-            {% endfor %}
+            {% if r[3] == "Pending" %}
+                <a href="/approve/{{ r[0] }}" class="approve-btn">
+                    Approve Claim
+                </a>
+            {% endif %}
 
         </div>
+        {% endfor %}
+
+    </div>
 
     {% else %}
 
-        <div class="empty-state">
-            <h3>No requests available</h3>
-            <p>When students request items, they will appear here.</p>
-        </div>
+    <div class="card">
+        <h3 style="text-align:center;">No requests available</h3>
+        <p style="text-align:center; opacity:0.8;">
+            When someone requests your item, it will appear here.
+        </p>
+    </div>
 
     {% endif %}
 
-</main>
+</div>
 
-<footer class="footer">
+<div class="footer">
     © 2026 FindIt | College Lost & Found System
-</footer>
+</div>
 
 </body>
 </html>
