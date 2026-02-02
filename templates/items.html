@@ -8,7 +8,7 @@
     <style>
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 25px;
             padding: 40px;
         }
@@ -17,20 +17,29 @@
             background: rgba(255,255,255,0.15);
             backdrop-filter: blur(10px);
             border-radius: 16px;
-            overflow: hidden;
             box-shadow: 0 15px 40px rgba(0,0,0,0.4);
             transition: transform 0.3s;
+            overflow: hidden;
         }
 
         .item-card:hover {
             transform: translateY(-8px);
         }
 
-        /* ✅ IMAGE STYLE */
-        .item-card img {
+        /* ✅ IMAGE FIX */
+        .item-image {
             width: 100%;
             height: 220px;
-            object-fit: cover;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* 🔥 SHOW FULL IMAGE */
         }
 
         .item-content {
@@ -57,6 +66,7 @@
             text-decoration: none;
             font-weight: bold;
             font-size: 14px;
+            margin-top: 10px;
         }
 
         .search-bar {
@@ -72,23 +82,13 @@
     📦 Found Items
 </div>
 
-<!-- SEARCH + FILTER -->
+<!-- SEARCH -->
 <div class="card search-bar">
     <form method="get">
-        <input
-            type="text"
-            name="search"
-            placeholder="Search item name"
-            value="{{ request.args.get('search','') }}"
-        >
-
-        <input
-            type="text"
-            name="category"
-            placeholder="Category (Phone, Wallet, ID)"
-            value="{{ request.args.get('category','') }}"
-        >
-
+        <input type="text" name="search" placeholder="Search item name"
+               value="{{ request.args.get('search','') }}">
+        <input type="text" name="category" placeholder="Category (Phone, Wallet, ID)"
+               value="{{ request.args.get('category','') }}">
         <button type="submit">Search</button>
     </form>
 </div>
@@ -104,11 +104,12 @@
 {% for item in items %}
 <div class="item-card">
 
-    <!-- ✅ IMAGE DISPLAY FIX -->
+    <!-- ✅ IMAGE DISPLAY -->
     {% if item[5] %}
-        <img src="{{ url_for('static', filename='uploads/' + item[5]) }}" alt="Item Image">
-    {% else %}
-        <img src="https://via.placeholder.com/400x220?text=No+Image">
+    <div class="item-image">
+        <img src="{{ url_for('static', filename='uploads/' ~ item[5]) }}"
+             alt="Item image">
+    </div>
     {% endif %}
 
     <div class="item-content">
