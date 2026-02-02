@@ -8,15 +8,13 @@ import os
 app = Flask(__name__)
 app.secret_key = "findit_secret"
 
-# ================= CONFIG =================
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# Initialize DB
 init_db()
 
-# ================= LOGIN =================
+# ---------------- LOGIN ----------------
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -39,7 +37,7 @@ def login():
     return render_template("login.html")
 
 
-# ================= REGISTER =================
+# ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -63,7 +61,7 @@ def register():
     return render_template("register.html")
 
 
-# ================= DASHBOARD =================
+# ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
 def dashboard():
     if "user" not in session:
@@ -71,7 +69,7 @@ def dashboard():
     return render_template("dashboard.html", role=session["role"])
 
 
-# ================= ADD ITEM =================
+# ---------------- ADD ITEM ----------------
 @app.route("/add_item", methods=["GET", "POST"])
 def add_item():
     if "user" not in session:
@@ -108,7 +106,7 @@ def add_item():
     return render_template("add_item.html")
 
 
-# ================= VIEW + SEARCH ITEMS =================
+# ---------------- VIEW + SEARCH ITEMS ----------------
 @app.route("/items")
 def items():
     if "user" not in session:
@@ -128,8 +126,8 @@ def items():
         params.append(f"%{search}%")
 
     if category:
-        query += " AND category LIKE ?"
-        params.append(f"%{category}%")
+        query += " AND category=?"
+        params.append(category)
 
     cur.execute(query, params)
     items = cur.fetchall()
@@ -138,7 +136,7 @@ def items():
     return render_template("items.html", items=items, user=session["user"])
 
 
-# ================= INSTANT CLAIM (NO ADMIN) =================
+# ---------------- REQUEST CLAIM ----------------
 @app.route("/request_claim/<int:item_id>")
 def request_claim(item_id):
     if "user" not in session:
@@ -147,11 +145,10 @@ def request_claim(item_id):
     conn = connect()
     cur = conn.cursor()
 
-    # Check item
-    cur.execute(
-        "SELECT owner_email, status FROM items WHERE id=?",
-        (item_id,)
-    )
+    # Check item status & owner
+    cur.execute("""
+        SELECT owner_email, status FROM items WHERE id=?
+    """, (item_id,))
     item = cur.fetchone()
 
     if not item:
@@ -160,12 +157,58 @@ def request_claim(item_id):
 
     owner_email, status = item
 
-    # ❌ Cannot claim own item or already claimed
+    # ❌ Cannot request own item or already claimed item
     if owner_email == session["user"] or status == "Claimed":
         conn.close()
         return redirect("/items")
 
-    # ✅ Mark item as claimed instantly
+    # ❌ Prevent duplicate requests
+    cur.execute("""
+        SELECT 1 FROM requests
+        WHERE item_id=? AND requester_email=?
+    """, (item_id, session["user"]))
+    exists = cur.fetchone()
+
+    if not exists:
+        cur.execute("""
+            INSERT INTO requests (item_id, requester_email)
+            VALUES (?, ?)
+        """, (item_id, session["user"]))
+        conn.commit()
+
+    conn.close()
+    return redirect("/items")
+
+
+# ---------------- OWNER APPROVES CLAIM ----------------
+@app.route("/approve/<int:req_id>")
+def approve(req_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = connect()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT items.id, items.owner_email, requests.requester_email
+        FROM requests
+        JOIN items ON items.id = requests.item_id
+        WHERE requests.id=?
+    """, (req_id,))
+    row = cur.fetchone()
+
+    if not row:
+        conn.close()
+        return redirect("/dashboard")
+
+    item_id, owner_email, requester_email = row
+
+    # Only owner can approve
+    if owner_email != session["user"]:
+        conn.close()
+        return redirect("/dashboard")
+
+    # Mark item as claimed
     cur.execute("""
         UPDATE items
         SET status='Claimed',
@@ -173,24 +216,30 @@ def request_claim(item_id):
             claimed_at=?
         WHERE id=?
     """, (
-        session["user"],
+        requester_email,
         datetime.now().strftime("%d %b %Y, %I:%M %p"),
         item_id
     ))
 
-    # ✅ Log request history
+    # Approve this request
     cur.execute("""
-        INSERT INTO requests (item_id, requester_email, status)
-        VALUES (?, ?, 'Claimed')
-    """, (item_id, session["user"]))
+        UPDATE requests SET status='Approved' WHERE id=?
+    """, (req_id,))
+
+    # Reject all other requests for this item
+    cur.execute("""
+        UPDATE requests
+        SET status='Rejected'
+        WHERE item_id=? AND id!=?
+    """, (item_id, req_id))
 
     conn.commit()
     conn.close()
 
-    return redirect("/items")
+    return redirect("/dashboard")
 
 
-# ================= VIEW REQUESTS =================
+# ---------------- VIEW REQUESTS (OWNER + ADMIN) ----------------
 @app.route("/requests")
 def requests_page():
     if "user" not in session:
@@ -204,7 +253,6 @@ def requests_page():
             SELECT requests.id, items.name, requests.requester_email, requests.status
             FROM requests
             JOIN items ON items.id = requests.item_id
-            ORDER BY requests.id DESC
         """)
     else:
         cur.execute("""
@@ -212,7 +260,6 @@ def requests_page():
             FROM requests
             JOIN items ON items.id = requests.item_id
             WHERE items.owner_email=?
-            ORDER BY requests.id DESC
         """, (session["user"],))
 
     data = cur.fetchall()
@@ -221,13 +268,12 @@ def requests_page():
     return render_template("requests.html", data=data)
 
 
-# ================= LOGOUT =================
+# ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
 
 
-# ================= RUN =================
 if __name__ == "__main__":
     app.run(debug=True)
